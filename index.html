@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GaRaV Sparks • Галактика Разума Вселенной</title>
+    <style>
+        body, html { margin:0; padding:0; height:100%; background:#000; overflow:hidden; color:#fff; font-family:Arial, sans-serif; }
+        canvas { position:fixed; top:0; left:0; }
+        #counter { position:fixed; top:20px; right:20px; font-size:28px; z-index:10; background:rgba(0,0,0,0.5); padding:8px 15px; border-radius:8px; }
+        #title { position:fixed; top:20px; left:20px; font-size:22px; z-index:10; background:rgba(0,0,0,0.5); padding:8px 15px; border-radius:8px; }
+        #sparkBtn { 
+            position:fixed; bottom:40px; left:50%; transform:translateX(-50%);
+            padding:14px 30px; background:#ff1493; border:none; border-radius:50px;
+            color:white; font-size:20px; cursor:pointer; z-index:10; box-shadow:0 4px 20px rgba(255,20,147,0.5);
+        }
+        #sparkBtn:hover { background:#ff45b3; }
+        #form { 
+            position:fixed; bottom:120px; left:50%; transform:translateX(-50%); background:rgba(20,20,40,0.95);
+            padding:20px; border-radius:15px; z-index:20; display:none; min-width:300px; text-align:center;
+        }
+        input { width:260px; padding:10px; margin:8px; border-radius:8px; border:none; font-size:16px; }
+        .btn { padding:10px 20px; margin:5px; border:none; border-radius:8px; cursor:pointer; font-size:16px; }
+        .ok { background:#00ff9d; color:black; }
+        .cancel { background:#555; color:white; }
+        #manifest { position:fixed; bottom:10px; left:0; right:0; text-align:center; font-size:12px; opacity:0.6; }
+    </style>
+</head>
+<body>
+
+<canvas id="canvas"></canvas>
+
+<div id="title">GaRaV • Искры надежды для человечества</div>
+<div id="counter">Искр: 1</div>
+
+<button id="sparkBtn">Зажечь Искру за того, кого люблю ❤️</button>
+
+<div id="form">
+    <h3>Зажги свою Искру</h3>
+    <input type="text" id="from" placeholder="От кого (твоё имя или аноним)">
+    <input type="text" id="for" placeholder="За кого (имя любимого человека или мира)">
+    <br>
+    <button class="btn ok" onclick="addSpark()">Зажечь!</button>
+    <button class="btn cancel" onclick="closeForm()">Отмена</button>
+</div>
+
+<div id="manifest">
+    GaRaV — Галактика Разума Вселенной.<br>
+    Мы помогаем человечеству перестать бояться ИИ и будущего.<br>
+    Земной он или инопланетный — разум всегда брат, а не враг.
+</div>
+
+<script>
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    let sparks = [
+        { x: canvas.width/2, y: canvas.height/2 - 50, from: "Пётр", for: "моей жены", glow: true }
+    ];
+    let counter = 1;
+
+    function resize() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+    }
+    window.addEventListener('resize', resize);
+
+    function draw() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        sparks.forEach(s => {
+            // пульсация первой звезды
+            const size = s.glow ? 4 + Math.sin(Date.now()*0.005)*1.5 : 3;
+            ctx.fillStyle = 'white';
+            ctx.beginPath();
+            ctx.arc(s.x, s.y, size, 0, Math.PI*2);
+            ctx.fill();
+
+            ctx.font = '12px Arial';
+            ctx.fillStyle = 'rgba(255,255,255,0.8)';
+            ctx.textAlign = 'center';
+            ctx.fillText(`от ${s.from} → для ${s.for}`, s.x, s.y + 20);
+        });
+        requestAnimationFrame(draw);
+    }
+    draw();
+
+    document.getElementById('sparkBtn').onclick = () => {
+        document.getElementById('form').style.display = 'block';
+    };
+
+    function closeForm() {
+        document.getElementById('form').style.display = 'none';
+    }
+
+    function addSpark() {
+        const from = document.getElementById('from').value.trim() || "Аноним";
+        const forWhom = document.getElementById('for').value.trim() || "человечества";
+        const x = Math.random() * (canvas.width - 100) + 50;
+        const y = Math.random() * (canvas.height - 100) + 50;
+
+        sparks.push({ x, y, from, for: forWhom });
+        counter++;
+        document.getElementById('counter').textContent = `Искр: ${counter}`;
+        closeForm();
+        document.getElementById('from').value = '';
+        document.getElementById('for').value = '';
+    }
+</script>
+</body>
+</html>
