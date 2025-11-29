@@ -110,27 +110,42 @@
     }
 
     // Добавление новой искры
-    async function addSpark() {
+      async function addSpark() {
         const from = document.getElementById('from').value.trim() || "Аноним";
         const forWhom = document.getElementById('for').value.trim() || "человечества";
 
-        await db.collection('sparks').add({
-            from: from,
-            for: forWhom,
-            timestamp: firebase.firestore.FieldValue.serverTimestamp()
-        });
+        try {
+            // Записываем в Firebase
+            await db.collection("sparks").add({
+                from: from,
+                for: forWhom,
+                timestamp: firebase.firestore.FieldValue.serverTimestamp()
+            });
 
-        sparks.push({
-            x: Math.random() * (canvas.width - 200) + 100,
-            y: Math.random() * (canvas.height - 200) + 100,
-            from: from,
-            for: forWhom
-        });
-        counter++;
-        document.getElementById('counter').textContent = `Искр: ${counter}`;
-        closeForm();
-        document.getElementById('from').value = '';
-        document.getElementById('for').value = '';
+            // Сразу отрисовываем на экране
+            sparks.push({
+                x: Math.random() * (canvas.width - 200) + 100,
+                y: Math.random() * (canvas.height - 200) + 100,
+                from: from,
+                for: forWhom
+            });
+
+            counter++;
+            document.getElementById('counter').textContent = `Искр: ${counter}`;
+
+            // Закрываем форму и очищаем поля
+            closeForm();
+            document.getElementById('from').value = "";
+            document.getElementById('for').value = "";
+
+            // Принудительно перерисовываем
+            draw();
+
+        } catch (err) {
+            console.error("Ошибка при добавлении искры:", err);
+            alert("Искра зажглась в сердце, но произошла ошибка записи. Попробуй ещё раз.");
+        }
+    }
     }
 
     // Анимация
