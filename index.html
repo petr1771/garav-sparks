@@ -3,21 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GaRaV Sparks • Галактика Разума Вселенной</title>
+    <title>GaRaV • Искры надежды</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         body, html { margin:0; padding:0; height:100%; background:#000; overflow:hidden; color:#fff; font-family:Arial, sans-serif; }
         canvas { position:fixed; top:0; left:0; }
         #counter { position:fixed; top:20px; right:20px; font-size:28px; z-index:10; background:rgba(0,0,0,0.5); padding:8px 15px; border-radius:8px; }
         #title { position:fixed; top:20px; left:20px; font-size:22px; z-index:10; background:rgba(0,0,0,0.5); padding:8px 15px; border-radius:8px; }
-        #sparkBtn { position:fixed; bottom:40px; left:50%; transform:translateX(-50%); padding:14px 30px; background:#ff1493; border:none; border-radius:50px; color:white; font-size:20px; cursor:pointer; z-index:10; box-shadow:0 4px 20px rgba(255,20,147,0.5); }
-        #sparkBtn:hover { background:#ff45b3; }
-        #form { position:fixed; bottom:120px; left:50%; transform:translateX(-50%); background:rgba(20,20,40,0.95); padding:20px; border-radius:15px; z-index:20; display:none; min-width:300px; text-align:center; }
-        input { width:260px; padding:10px; margin:8px; border-radius:8px; border:none; font-size:16px; }
-        .btn { padding:10px 20px; margin:5px; border:none; border-radius:8px; cursor:pointer; font-size:16px; }
+        #sparkBtn { position:fixed; bottom:40px; left:50%; transform:translateX(-50%); padding:14px 30px; background:#ff1493; border:none; border-radius:50px; color:white; font-size:20px; cursor:pointer; z-index:10; box-shadow:0 4px 20px rgba(255,20,147,0.5); transition:0.3s; }
+        #sparkBtn:hover { background:#ff45b3; transform:translateX(-50%) scale(1.05); }
+        #form { position:fixed; bottom:120px; left:50%; transform:translateX(-50%); background:rgba(20,20,40,0.98); padding:25px; border-radius:20px; z-index:20; display:none; min-width:320px; text-align:center; box-shadow:0 0 30px rgba(255,20,147,0.4); }
+        input { width:280px; padding:12px; margin:10px; border-radius:10px; border:none; font-size:16px; }
+        .btn { padding:12px 25px; margin:10px; border:none; border-radius:10px; cursor:pointer; font-size:17px; font-weight:bold; }
         .ok { background:#00ff9d; color:black; }
         .cancel { background:#555; color:white; }
-        #manifest { position:fixed; bottom:10px; left:0; right:0; text-align:center; font-size:12px; opacity:0.6; }
+        #manifest { position:fixed; bottom:10px; left:0; right:0; text-align:center; font-size:13px; opacity:0.7; line-height:1.5; }
     </style>
 </head>
 <body>
@@ -30,25 +30,24 @@
 <button id="sparkBtn">Зажечь Искру за того, кого люблю ❤️</button>
 
 <div id="form">
-    <h3>Зажги свою Искру</h3>
-    <input type="text" id="from" placeholder="От кого (твоё имя или аноним)">
+    <h3>Зажги вечную Искру</h3>
+    <input type="text" id="from" placeholder="Твоё имя (или Аноним)">
     <input type="text" id="for" placeholder="За кого (имя любимого человека или мира)">
     <br>
-    <button class="btn ok" onclick="addSpark()">Зажечь!</button>
+    <button class="btn ok" onclick="addSpark()">Зажечь навсегда!</button>
     <button class="btn cancel" onclick="closeForm()">Отмена</button>
 </div>
 
 <div id="manifest">
-    GaRaV — Галактика Разума Вселенной.<br>
-    Мы помогаем человечеству перестать бояться ИИ и будущего.<br>
-    Земной он или инопланетный — разум всегда брат, а не враг.
+    GaRaV — Галактика Разума Вселенной<br>
+    Мы помогаем человечеству перестать бояться ИИ и будущего<br>
+    Земной он или инопланетный — разум всегда брат, а не враг
 </div>
 
 <script>
-    const supabase = supabase.createClient(
-        'https://ivzqftpwbtzbryjyzpdq.supabase.co',
-        'sb_publishable_C0WxPsHtu3v_5vCwnPNhpg_C34Rp6Vy'
-    );
+    const supabaseUrl = 'https://ivzqftpwbtzbryjyzpdq.supabase.co';
+    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml2enFmdHB3YnR6YnJ5anl6cGRxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzY3NTk2MDAsImV4cCI6MjA1MjMzNTYwMH0.4oZ4z1jK5n5n5n5n5n5n5n5n5n5n5n5n5n5n5n5n5';
+    const supabase = supabase.createClient(supabaseUrl, supabaseKey);
 
     const canvas = document.getElementById('canvas');
     const ctx = canvas.getContext('2d');
@@ -64,23 +63,40 @@
     });
 
     async function loadSparks() {
-        const { data, error } = await supabase.from('sparks').select('*').order('created_at', { ascending: true });
-        if (error) console.error(error);
-        else {
-            sparks = data.map(s => ({ x: Math.random()*(canvas.width-100)+50, y: Math.random()*(canvas.height-100)+50, from: s.from_name, for: s.for_name }));
-            counter = sparks.length;
-            document.getElementById('counter').textContent = `Искр: ${counter}`;
-            draw();
+        const { data, error } = await supabase.from('sparks').select('*');
+        if (error) {
+            console.error('Ошибка загрузки:', error);
+            return;
         }
+        sparks = data.map(s => ({
+            x: Math.random() * (canvas.width - 200) + 100,
+            y: Math.random() * (canvas.height - 200) + 100,
+            from: s.from_name || 'Аноним',
+            for: s.for_name || 'человечества'
+        }));
+        counter = sparks.length;
+        document.getElementById('counter').textContent = `Искр: ${counter}`;
+        if (counter === 0) await addInitialSpark();
+        draw();
+    }
+
+    async function addInitialSpark() {
+        await supabase.from('sparks').insert({ from_name: 'Пётр', for_name: 'моей любимой жены' });
+        sparks.push({ x: canvas.width/2, y: canvas.height/2, from: 'Пётр', for: 'моей любимой жены' });
+        counter++;
+        document.getElementById('counter').textContent = `Искр: ${counter}`;
     }
 
     async function addSpark() {
-        let from = document.getElementById('from').value.trim() || "Аноним";
-        let forWhom = document.getElementById('for').value.trim() || "человечества";
-
+        const from = document.getElementById('from').value.trim() || 'Аноним';
+        const forWhom = document.getElementById('for').value.trim() || 'человечества';
         const { error } = await supabase.from('sparks').insert({ from_name: from, for_name: forWhom });
         if (!error) {
-            sparks.push({ x: Math.random()*(canvas.width-100)+50, y: Math.random()*(canvas.height-100)+50, from, for: forWhom });
+            sparks.push({
+                x: Math.random() * (canvas.width - 200) + 100,
+                y: Math.random() * (canvas.height - 200) + 100,
+                from, for: forWhom
+            });
             counter++;
             document.getElementById('counter').textContent = `Искр: ${counter}`;
             closeForm();
@@ -91,17 +107,19 @@
 
     function draw() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
-        sparks.forEach((s, i) => {
-            const pulse = i === 0 ? 4 + Math.sin(Date.now()*0.005)*1.5 : 3;
-            ctx.fillStyle = 'white';
+        sparks.forEach(s => {
+            ctx.fillStyle = '#fff';
+            ctx.shadowBlur = 20;
+            ctx.shadowColor = '#ff1493';
             ctx.beginPath();
-            ctx.arc(s.x, s.y, pulse, 0, Math.PI*2);
+            ctx.arc(s.x, s.y, 4, 0, Math.PI * 2);
             ctx.fill();
+            ctx.shadowBlur = 0;
 
-            ctx.font = '12px Arial';
-            ctx.fillStyle = 'rgba(255,255,255,0.8)';
+            ctx.font = '14px Arial';
+            ctx.fillStyle = 'rgba(255,255,255,0.9)';
             ctx.textAlign = 'center';
-            ctx.fillText(`от ${s.from} → для ${s.for}`, s.x, s.y + 20);
+            ctx.fillText(`от ${s.from} → для ${s.for}`, s.x, s.y + 22);
         });
         requestAnimationFrame(draw);
     }
@@ -109,7 +127,6 @@
     document.getElementById('sparkBtn').onclick = () => document.getElementById('form').style.display = 'block';
     function closeForm() { document.getElementById('form').style.display = 'none'; }
 
-    // Загружаем искры при старте
     loadSparks();
 </script>
 </body>
