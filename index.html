@@ -72,27 +72,27 @@
         canvas.height = window.innerHeight;
     });
 
-    async function loadSparks() {
-        try {
-            const snapshot = await db.collection("sparks").orderBy("timestamp").get();
-            sparks = [];
-            snapshot.forEach(doc => {
-                const d = doc.data();
-                sparks.push({
-                    x: Math.random() * (canvas.width - 200) + 100,
-                    y: Math.random() * (canvas.height - 200) + 100,
-                    from: d.from || "Аноним",
-                    for: d.for || "человечества"
-                });
+   async function loadSparks() {
+    try {
+        const snapshot = await db.collection("sparks").orderBy("timestamp").get();
+        sparks = [];
+        snapshot.forEach(doc => {
+            const d = doc.data();
+            sparks.push({
+                x: Math.random() * (canvas.width - 200) + 100,
+                y: Math.random() * (canvas.height - 200) + 100,
+                from: d.from || "Аноним",
+                for: d.for || "человечества"
             });
-            counter = sparks.length;
-            document.getElementById('counter').textContent = `Искр: ${counter}`;
-
-            if (counter === 0) await addFirstSpark();
-            draw();
-        } catch (e) {
-            console.log("База пустая, создаём первую искру");
-            await addFirstSpark();
+        });
+        counter = sparks.length;
+        document.getElementById('counter').textContent = `Искр: ${counter}`;
+        draw();
+    } catch (e) {
+        console.log("Коллекция пуста, зажигаем первую искру");
+        addFirstSpark();  // ← Теперь без await, чтобы сразу запустилось
+    }
+}
         }
     }
 
