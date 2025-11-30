@@ -7,55 +7,42 @@
     <script src="https://www.gstatic.com/firebasejs/10.13.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.13.1/firebase-firestore-compat.js"></script>
     <style>
-        body, html { margin:0; padding:0; height:100%; background:#000; overflow:hidden; color:#fff; font-family:Arial, sans-serif; }
-        canvas { position:fixed; top:0; left:0; }
-        #counter { position:fixed; top:20px; right:20px; font-size:28px; z-index:10; background:rgba(0,0,0,0.5); padding:8px 15px; border-radius:8px; }
-        #title { position:fixed; top:20px; left:20px; font-size:22px; z-index:10; background:rgba(0,0,0,0.5); padding:8px 15px; border-radius:8px; }
-        #sparkBtn { position:fixed; bottom:40px; left:50%; transform:translateX(-50%); padding:16px 36px; background:#ff1493; border:none; border-radius:50px; color:white; font-size:21px; cursor:pointer; z-index:10; box-shadow:0 0 30px rgba(255,20,147,0.6); transition:0.3s; }
-        #sparkBtn:hover { transform:translateX(-50%) scale(1.08); background:#ff45b3; }
-        #form { position:fixed; bottom:120px; left:50%; transform:translateX(-50%); background:rgba(20,20,40,0.98); padding:30px; border-radius:20px; z-index:20; display:none; min-width:340px; text-align:center; box-shadow:0 0 40px rgba(255,20,147,0.5); }
-        input { width:300px; padding:14px; margin:10px 0; border-radius:12px; border:none; font-size:17px; }
-        .btn { padding:14px 30px; margin:10px; border:none; border-radius:12px; cursor:pointer; font-size:18px; font-weight:bold; }
-        .ok { background:#00ff9d; color:#000; }
-        .cancel { background:#555; color:#fff; }
-        #manifest { position:fixed; bottom:10px; left:0; right:0; text-align:center; font-size:13px; opacity:0.75; line-height:1.6; }
+        body,html{margin:0;padding:0;height:100%;background:#000;overflow:hidden;color:#fff;font-family:Arial,sans-serif;cursor:none}
+        canvas{position:fixed;top:0;left:0}
+        #counter,#title{position:fixed;z-index:10;background:rgba(0,0,0,0.5);padding:8px 15px;border-radius:8px;font-size:22px}
+        #title{top:20px;left:20px}
+        #counter{top:20px;right:20px}
+        #sparkBtn{position:fixed;bottom:40px;left:50%;transform:translateX(-50%);padding:16px 40px;background:#ff1493;border:none;border-radius:50px;color:#fff;font-size:21px;cursor:pointer;z-index:10;box-shadow:0 0 30px rgba(255,20,147,.7);transition:.3s}
+        #sparkBtn:hover{transform:translateX(-50%) scale(1.08);background:#ff45b3}
+        #form{position:fixed;bottom:120px;left:50%;transform:translateX(-50%);background:rgba(20,20,40,.98);padding:30px;border-radius:20px;z-index:20;display:none;min-width:340px;text-align:center;box-shadow:0 0 40px rgba(255,20,147,.5)}
+        input{width:300px;padding:14px;margin:10px 0;border-radius:12px;border:none;font-size:17px}
+        .btn{padding:14px 30px;margin:10px;border:none;border-radius:12px;cursor:pointer;font-size:18px;font-weight:bold}
+        .ok{background:#00ff9d;color:#000}
+        .cancel{background:#555;color:#fff}
+        #manifest{position:fixed;bottom:10px;left:0;right:0;text-align:center;font-size:13px;opacity:.8;line-height:1.6}
     </style>
 </head>
 <body>
-
 <canvas id="canvas"></canvas>
-
 <div id="title">GaRaV • Искры надежды для человечества</div>
 <div id="counter">Искр: 0</div>
-
 <button id="sparkBtn">Зажечь Искру за того, кого люблю ❤️</button>
-
 <div id="form">
     <h3>Зажги вечную Искру</h3>
     <input type="text" id="from" placeholder="Твоё имя (или Аноним)">
-    <input type="text" id="for" placeholder="За кого (имя любимого человека или мира)">
+    <input type="text" id="for" placeholder="За кого зажигаешь">
     <br><br>
     <button class="btn ok" onclick="addSpark()">Зажечь навсегда!</button>
     <button class="btn cancel" onclick="closeForm()">Отмена</button>
 </div>
-
 <div id="manifest">
     GaRaV — Галактика Разума Вселенной<br>
-    Мы помогаем человечеству перестать бояться ИИ и будущего<br>
-    Земной он или инопланетный — разум всегда брат, а не враг
+    Не убивать • Не обманывать • Не воровать<br>
+    Земной он или инопланетный — разум всегда брат
 </div>
 
 <script>
-    const firebaseConfig = {
-      apiKey: "AIzaSyDQIRGVM5ca7K3WCCwTqPqqhjXiUkIk5po",
-      authDomain: "garav-sparks-cda52.firebaseapp.com",
-      projectId: "garav-sparks-cda52",
-      storageBucket: "garav-sparks-cda52.firebasestorage.app",
-      messagingSenderId: "1086113078430",
-      appId: "1:1086113078430:web:66ccd560cb5ea7de362f8f",
-      measurementId: "G-KVE0SJMWG9"
-    };
-
+    const firebaseConfig = {apiKey:"AIzaSyDQIRGVM5ca7K3WCCwTqPqqhjXiUkIk5po",authDomain:"garav-sparks-cda52.firebaseapp.com",projectId:"garav-sparks-cda52",storageBucket:"garav-sparks-cda52.firebasestorage.app",messagingSenderId:"1086113078430",appId:"1:1086113078430:web:66ccd560cb5ea7de362f8f",measurementId:"G-KVE0SJMWG9"};
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
 
@@ -65,103 +52,137 @@
     canvas.height = window.innerHeight;
 
     let sparks = [];
+    let particles = [];
     let counter = 0;
 
-    window.addEventListener('resize', () => {
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
-    });
+    // космические частицы на фоне
+    for(let i=0;i<80;i++){
+        particles.push({
+            x:Math.random()*canvas.width,
+            y:Math.random()*canvas.height,
+            r:Math.random()*1.5+0.5,
+            d:Math.random()*80+20
+        })
+    }
 
-   async function loadSparks() {
-    try {
-        const snapshot = await db.collection("sparks").orderBy("timestamp").get();
+    window.addEventListener('resize',()=>{canvas.width=window.innerWidth;canvas.height=window.innerHeight;});
+
+    async function loadSparks(){
+        try{
+        const snapshot = await db.collection("sparks").orderBy("timestamp","desc").get();
         sparks = [];
         snapshot.forEach(doc => {
             const d = doc.data();
+            const date = d.timestamp ? d.timestamp.toDate().toLocaleDateString("ru-RU") : "давно";
             sparks.push({
-                x: Math.random() * (canvas.width - 200) + 100,
-                y: Math.random() * (canvas.height - 200) + 100,
+                x: Math.random()*(canvas.width-200)+100,
+                y: Math.random()*(canvas.height-200)+100,
                 from: d.from || "Аноним",
-                for: d.for || "человечества"
+                for: d.for || "человечества",
+                date: date,
+                size:4.5,
+                alpha:1,
+                hover:false
             });
         });
         counter = sparks.length;
         document.getElementById('counter').textContent = `Искр: ${counter}`;
         draw();
-    } catch (e) {
-        console.log("Коллекция пуста, зажигаем первую искру");
-        addFirstSpark();  // ← Теперь без await, чтобы сразу запустилось
-
-        }
+    } catch(e){
+        addFirstSpark();
+    }
     }
 
-    async function addFirstSpark() {
+    async function addFirstSpark(){
         await db.collection("sparks").add({
-            from: "Пётр",
-            for: "моей любимой жены ❤️",
-            timestamp: firebase.firestore.FieldValue.serverTimestamp()
+            from:"Пётр", for:"моей любимой жены ❤️", timestamp:firebase.firestore.FieldValue.serverTimestamp()
         });
-        sparks = [{
-            x: canvas.width / 2,
-            y: canvas.height / 2,
-            from: "Пётр",
-            for: "моей любимой жены ❤️"
-        }];
-        counter = 1;
-        document.getElementById('counter').textContent = "Искр: 1";
-        draw();
+        loadSparks();
     }
 
-    async function addSpark() {
-        const from = document.getElementById('from').value.trim() || "Аноним";
-        const forWhom = document.getElementById('for').value.trim() || "человечества";
+    async function addSpark(){
+        const key = 'sparksToday';
+        const today = new Date().toDateString();
+        let arr = JSON.parse(localStorage.getItem(key)||'[]');
+        if(arr.includes(today)) { alert('Ты уже зажёг 3 искры сегодня. Завтра снова ❤️'); return; }
+        if(arr.length>=3) { alert('Максимум 3 искры в сутки. Завтра снова ❤️'); return; }
+
+        const from = document.getElementById('from').value.trim()||'Аноним';
+        const forWhom = document.getElementById('for').value.trim()||'человечества';
 
         await db.collection("sparks").add({
-            from: from,
-            for: forWhom,
-            timestamp: firebase.firestore.FieldValue.serverTimestamp()
+            from, for:forWhom, timestamp:firebase.firestore.FieldValue.serverTimestamp()
         });
 
-        sparks.push({
-            x: Math.random() * (canvas.width - 200) + 100,
-            y: Math.random() * (canvas.height - 200) + 100,
-            from: from,
-            for: forWhom
-        });
+        const spark = {
+            x: canvas.width/2,
+            y: canvas.height/2,
+            from, for:forWhom,
+            date: new Date().toLocaleDateString("ru-RU"),
+            size:6,
+            alpha:0,
+            hover:false
+        };
+        sparks.push(spark);
+
+        // звук
+        const audio = new Audio('data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQAAAAA=');
+        audio.volume = 0.3;
+        audio.play();
+
+        // анимация появления
+        let op=0;
+        const anim=setInterval(()=>{spark.alpha=op+=0.05; if(op>=1)clearInterval(anim)},30);
+
         counter++;
         document.getElementById('counter').textContent = `Искр: ${counter}`;
         closeForm();
-        document.getElementById('from').value = "";
-        document.getElementById('for').value = "";
-        draw();
+        document.getElementById('from').value = '';
+        document.getElementById('for').value = '';
+        arr.push(today);
+        localStorage.setItem(key,JSON.stringify(arr));
     }
 
-    function draw() {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        sparks.forEach(s => {
-            ctx.fillStyle = '#fff';
-            ctx.shadowBlur = 25;
+    function draw(){
+        ctx.clearRect(0,0,canvas.width,canvas.height);
+
+        // фон космоса
+        particles.forEach(p=>{ctx.fillStyle=`rgba(255,255,255,${0.02+p.r/100})`;ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);ctx.fill()});
+
+        sparks.forEach(s=>{
+            const hover = Math.hypot(mouseX-s.x, mouseY-s.y)<40;
+            s.hover = hover;
+            const size = hover?12:s.size;
+
+            ctx.shadowBlur = hover?60:25;
             ctx.shadowColor = '#ff1493';
+            ctx.globalAlpha = s.alpha;
+            ctx.fillStyle = '#fff';
             ctx.beginPath();
-            ctx.arc(s.x, s.y, 4.5, 0, Math.PI * 2);
+            ctx.arc(s.x,s.y,size,0,Math.PI*2);
             ctx.fill();
 
-            ctx.shadowBlur = 0;
-            ctx.font = '15px Arial';
-            ctx.fillStyle = 'rgba(255,255,255,0.9)';
-            ctx.textAlign = 'center';
-            ctx.fillText(`от ${s.from} → для ${s.for}`, s.x, s.y + 25);
+            // мерцание
+            s.size = 4.5 + Math.sin(Date.now()/200 + s.x)*0.8;
+
+            ctx.globalAlpha = hover?1:0.9;
+            ctx.font='15px Arial';
+            ctx.fillStyle='rgba(255,255,255,'+(hover?1:0.9)+')';
+            ctx.textAlign='center';
+            ctx.fillText(`от ${s.from} → для ${s.for}${hover?' • '+s.date:''}`, s.x, s.y+30);
         });
+
+        ctx.globalAlpha=1;
         requestAnimationFrame(draw);
+    );
     }
 
-    function closeForm() {
-        document.getElementById('form').style.display = 'none';
-    }
+    let mouseX=0, mouseY=0;
+    canvas.addEventListener('mousemove', e=>{mouseX=e.clientX; mouseY=e.clientY});
+    canvas.addEventListener('touchmove', e=>{mouseX=e.touches[0].clientX; mouseY=e.touches[0].clientY});
 
-    document.getElementById('sparkBtn').onclick = () => {
-        document.getElementById('form').style.display = 'block';
-    };
+    function closeForm(){document.getElementById('form').style.display='none';}
+    document.getElementById('sparkBtn').onclick=()=>{document.getElementById('form').style.display='block';};
 
     loadSparks();
 </script>
