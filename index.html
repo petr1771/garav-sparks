@@ -46,7 +46,6 @@
 </div>
 
 <script>
-    // Твой личный конфиг Firebase
     const firebaseConfig = {
       apiKey: "AIzaSyDQIRGVM5ca7K3WCCwTqPqqhjXiUkIk5po",
       authDomain: "garav-sparks-cda52.firebaseapp.com",
@@ -57,7 +56,6 @@
       measurementId: "G-KVE0SJMWG9"
     };
 
-    // Инициализация Firebase
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
 
@@ -74,81 +72,71 @@
         canvas.height = window.innerHeight;
     });
 
-    // Загрузка всех искр
     async function loadSparks() {
-        const snapshot = await db.collection('sparks').orderBy('timestamp').get();
-        sparks = [];
-        snapshot.forEach(doc => {
-            const data = doc.data();
-            sparks.push({
-                x: Math.random() * (canvas.width - 200) + 100,
-                y: Math.random() * (canvas.height - 200) + 100,
-                from: data.from || 'Аноним',
-                for: data.for || 'человечества'
+        try {
+            const snapshot = await db.collection("sparks").orderBy("timestamp").get();
+            sparks = [];
+            snapshot.forEach(doc => {
+                const d = doc.data();
+                sparks.push({
+                    x: Math.random() * (canvas.width - 200) + 100,
+                    y: Math.random() * (canvas.height - 200) + 100,
+                    from: d.from || "Аноним",
+                    for: d.for || "человечества"
+                });
             });
-        });
-        counter = sparks.length;
-        document.getElementById('counter').textContent = `Искр: ${counter}`;
+            counter = sparks.length;
+            document.getElementById('counter').textContent = `Искр: ${counter}`;
 
-        // Первая искра от Петра — автоматически
-        if (counter === 0) {
-            addFirstSpark();
+            if (counter === 0) await addFirstSpark();
+            draw();
+        } catch (e) {
+            console.log("База пустая, создаём первую искру");
+            await addFirstSpark();
         }
-        draw();
     }
 
-    // Первая вечная искра
     async function addFirstSpark() {
-        await db.collection('sparks').add({
+        await db.collection("sparks").add({
             from: "Пётр",
             for: "моей любимой жены ❤️",
             timestamp: firebase.firestore.FieldValue.serverTimestamp()
         });
-        sparks.push({ x: canvas.width/2, y: canvas.height/2, from: "Пётр", for: "моей любимой жены ❤️" });
+        sparks = [{
+            x: canvas.width / 2,
+            y: canvas.height / 2,
+            from: "Пётр",
+            for: "моей любимой жены ❤️"
+        }];
         counter = 1;
-        document.getElementById('counter').textContent = `Искр: 1`;
+        document.getElementById('counter').textContent = "Искр: 1";
+        draw();
     }
 
-    // Добавление новой искры
-      async function addSpark() {
+    async function addSpark() {
         const from = document.getElementById('from').value.trim() || "Аноним";
         const forWhom = document.getElementById('for').value.trim() || "человечества";
 
-        try {
-            // Записываем в Firebase
-            await db.collection("sparks").add({
-                from: from,
-                for: forWhom,
-                timestamp: firebase.firestore.FieldValue.serverTimestamp()
-            });
+        await db.collection("sparks").add({
+            from: from,
+            for: forWhom,
+            timestamp: firebase.firestore.FieldValue.serverTimestamp()
+        });
 
-            // Сразу отрисовываем на экране
-            sparks.push({
-                x: Math.random() * (canvas.width - 200) + 100,
-                y: Math.random() * (canvas.height - 200) + 100,
-                from: from,
-                for: forWhom
-            });
-
-            counter++;
-            document.getElementById('counter').textContent = `Искр: ${counter}`;
-
-            // Закрываем форму и очищаем поля
-            closeForm();
-            document.getElementById('from').value = "";
-            document.getElementById('for').value = "";
-
-            // Принудительно перерисовываем
-            draw();
-
-        } catch (err) {
-            console.error("Ошибка при добавлении искры:", err);
-            alert("Искра зажглась в сердце, но произошла ошибка записи. Попробуй ещё раз.");
-        }
-    }
+        sparks.push({
+            x: Math.random() * (canvas.width - 200) + 100,
+            y: Math.random() * (canvas.height - 200) + 100,
+            from: from,
+            for: forWhom
+        });
+        counter++;
+        document.getElementById('counter').textContent = `Искр: ${counter}`;
+        closeForm();
+        document.getElementById('from').value = "";
+        document.getElementById('for').value = "";
+        draw();
     }
 
-    // Анимация
     function draw() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         sparks.forEach(s => {
@@ -158,8 +146,8 @@
             ctx.beginPath();
             ctx.arc(s.x, s.y, 4.5, 0, Math.PI * 2);
             ctx.fill();
-            ctx.shadowBlur = 0;
 
+            ctx.shadowBlur = 0;
             ctx.font = '15px Arial';
             ctx.fillStyle = 'rgba(255,255,255,0.9)';
             ctx.textAlign = 'center';
@@ -176,7 +164,6 @@
         document.getElementById('form').style.display = 'block';
     };
 
-    // Старт
     loadSparks();
 </script>
 </body>
