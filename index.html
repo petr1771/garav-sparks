@@ -7,7 +7,7 @@
     <script src="https://www.gstatic.com/firebasejs/10.13.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.13.1/firebase-firestore-compat.js"></script>
     <style>
-        body,html{margin:0;padding:0;height:100%;background:#000;overflow:hidden;color:#fff;font-family:Arial,sans-serif;cursor:none}
+        body,html{margin:0;padding:0;height:100%;background:#000;overflow:hidden;color:#fff;font-family:Arial,sans-serif}
         canvas{position:fixed;top:0;left:0}
         #counter,#title{position:fixed;z-index:10;background:rgba(0,0,0,0.5);padding:8px 15px;border-radius:8px;font-size:22px}
         #title{top:20px;left:20px}
@@ -42,7 +42,15 @@
 </div>
 
 <script>
-    const firebaseConfig = {apiKey:"AIzaSyDQIRGVM5ca7K3WCCwTqPqqhjXiUkIk5po",authDomain:"garav-sparks-cda52.firebaseapp.com",projectId:"garav-sparks-cda52",storageBucket:"garav-sparks-cda52.firebasestorage.app",messagingSenderId:"1086113078430",appId:"1:1086113078430:web:66ccd560cb5ea7de362f8f",measurementId:"G-KVE0SJMWG9"};
+    const firebaseConfig = {
+        apiKey: "AIzaSyDQIRGVM5ca7K3WCCwTqPqqhjXiUkIk5po",
+        authDomain: "garav-sparks-cda52.firebaseapp.com",
+        projectId: "garav-sparks-cda52",
+        storageBucket: "garav-sparks-cda52.firebasestorage.app",
+        messagingSenderId: "1086113078430",
+        appId: "1:1086113078430:web:66ccd560cb5ea7de362f8f",
+        measurementId: "G-KVE0SJMWG9"
+    };
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
 
@@ -54,135 +62,139 @@
     let sparks = [];
     let particles = [];
     let counter = 0;
+    let mouseX = 0, mouseY = 0;
 
-    // космические частицы на фоне
-    for(let i=0;i<80;i++){
+    // фон космоса
+    for(let i = 0; i < 100; i++){
         particles.push({
-            x:Math.random()*canvas.width,
-            y:Math.random()*canvas.height,
-            r:Math.random()*1.5+0.5,
-            d:Math.random()*80+20
-        })
-    }
-
-    window.addEventListener('resize',()=>{canvas.width=window.innerWidth;canvas.height=window.innerHeight;});
-
-    async function loadSparks(){
-        try{
-        const snapshot = await db.collection("sparks").orderBy("timestamp","desc").get();
-        sparks = [];
-        snapshot.forEach(doc => {
-            const d = doc.data();
-            const date = d.timestamp ? d.timestamp.toDate().toLocaleDateString("ru-RU") : "давно";
-            sparks.push({
-                x: Math.random()*(canvas.width-200)+100,
-                y: Math.random()*(canvas.height-200)+100,
-                from: d.from || "Аноним",
-                for: d.for || "человечества",
-                date: date,
-                size:4.5,
-                alpha:1,
-                hover:false
-            });
+            x: Math.random() * canvas.width,
+            y: Math.random() * canvas.height,
+            r: Math.random() * 1.5,
+            speed: Math.random() * 0.5 + 0.1
         });
-        counter = sparks.length;
-        document.getElementById('counter').textContent = `Искр: ${counter}`;
-        draw();
-    } catch(e){
-        addFirstSpark();
-    }
     }
 
-    async function addFirstSpark(){
+    window.addEventListener('resize', () => {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+    });
+
+    canvas.addEventListener('mousemove', e => { mouseX = e.clientX; mouseY = e.clientY; });
+    canvas.addEventListener('touchmove', e => { mouseX = e.touches[0].clientX; mouseY = e.touches[0].clientY; });
+
+    async function loadSparks() {
+        try {
+            const snapshot = await db.collection("sparks").orderBy("timestamp", "desc").get();
+            sparks = [];
+            snapshot.forEach(doc => {
+                const d = doc.data();
+                const date = d.timestamp ? d.timestamp.toDate().toLocaleDateString("ru-RU") : "давно";
+                sparks.push({
+                    x: Math.random() * (canvas.width - 300) + 150,
+                    y: Math.random() * (canvas.height - 300) + 150,
+                    from: d.from || "Аноним",
+                    for: d.for || "человечества",
+                    date: date,
+                    baseSize: 4.5,
+                    hover: false
+                });
+            });
+            counter = sparks.length;
+            document.getElementById('counter').textContent = `Искр: ${counter}`;
+            draw();
+        } catch (e) {
+            console.log("База пуста — зажигаем первую");
+            addFirstSpark();
+        }
+    }
+
+    async function addFirstSpark() {
         await db.collection("sparks").add({
-            from:"Пётр", for:"моей любимой жены ❤️", timestamp:firebase.firestore.FieldValue.serverTimestamp()
+            from: "Пётр",
+            for: "моей любимой жены ❤️",
+            timestamp: firebase.firestore.FieldValue.serverTimestamp()
         });
         loadSparks();
     }
 
-    async function addSpark(){
-        const key = 'sparksToday';
+    async function addSpark() {
         const today = new Date().toDateString();
-        let arr = JSON.parse(localStorage.getItem(key)||'[]');
-        if(arr.includes(today)) { alert('Ты уже зажёг 3 искры сегодня. Завтра снова ❤️'); return; }
-        if(arr.length>=3) { alert('Максимум 3 искры в сутки. Завтра снова ❤️'); return; }
+        const saved = JSON.parse(localStorage.getItem('GaRaV_day') || '[]');
+        if (saved.includes(today) && saved.length >= 3) {
+            alert("Ты уже зажёг 3 искры сегодня. Завтра снова ❤️");
+            return;
+        }
+        if (saved.length >= 3 && !saved.includes(today)) saved.shift();
 
-        const from = document.getElementById('from').value.trim()||'Аноним';
-        const forWhom = document.getElementById('for').value.trim()||'человечества';
+        const from = document.getElementById('from').value.trim() || "Аноним";
+        const forWhom = document.getElementById('for').value.trim() || "человечества";
 
         await db.collection("sparks").add({
-            from, for:forWhom, timestamp:firebase.firestore.FieldValue.serverTimestamp()
+            from: from,
+            for: forWhom,
+            timestamp: firebase.firestore.FieldValue.serverTimestamp()
         });
 
-        const spark = {
-            x: canvas.width/2,
-            y: canvas.height/2,
-            from, for:forWhom,
+        sparks.push({
+            x: canvas.width / 2,
+            y: canvas.height / 2,
+            from: from,
+            for: forWhom,
             date: new Date().toLocaleDateString("ru-RU"),
-            size:6,
-            alpha:0,
-            hover:false
-        };
-        sparks.push(spark);
+            baseSize: 7,
+            hover: false,
+            alpha: 0
+        });
 
-        // звук
-        const audio = new Audio('data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQAAAAA=');
-        audio.volume = 0.3;
-        audio.play();
-
-        // анимация появления
-        let op=0;
-        const anim=setInterval(()=>{spark.alpha=op+=0.05; if(op>=1)clearInterval(anim)},30);
+        new Audio('data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQAAAAA=').play();
 
         counter++;
         document.getElementById('counter').textContent = `Искр: ${counter}`;
         closeForm();
-        document.getElementById('from').value = '';
-        document.getElementById('for').value = '';
-        arr.push(today);
-        localStorage.setItem(key,JSON.stringify(arr));
+        document.getElementById('from').value = "";
+        document.getElementById('for').value = "";
+
+        saved.push(today);
+        localStorage.setItem('GaRaV_day', JSON.stringify(saved));
     }
 
-    function draw(){
-        ctx.clearRect(0,0,canvas.width,canvas.height);
+    function draw() {
+        ctx.fillStyle = 'rgba(0,0,0,0.05)';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-        // фон космоса
-        particles.forEach(p=>{ctx.fillStyle=`rgba(255,255,255,${0.02+p.r/100})`;ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);ctx.fill()});
-
-        sparks.forEach(s=>{
-            const hover = Math.hypot(mouseX-s.x, mouseY-s.y)<40;
-            s.hover = hover;
-            const size = hover?12:s.size;
-
-            ctx.shadowBlur = hover?60:25;
-            ctx.shadowColor = '#ff1493';
-            ctx.globalAlpha = s.alpha;
-            ctx.fillStyle = '#fff';
+        particles.forEach(p => {
+            p.y += p.speed;
+            if (p.y > canvas.height) p.y = 0;
+            ctx.fillStyle = 'rgba(255,255,255,0.03)';
             ctx.beginPath();
-            ctx.arc(s.x,s.y,size,0,Math.PI*2);
+            ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
             ctx.fill();
-
-            // мерцание
-            s.size = 4.5 + Math.sin(Date.now()/200 + s.x)*0.8;
-
-            ctx.globalAlpha = hover?1:0.9;
-            ctx.font='15px Arial';
-            ctx.fillStyle='rgba(255,255,255,'+(hover?1:0.9)+')';
-            ctx.textAlign='center';
-            ctx.fillText(`от ${s.from} → для ${s.for}${hover?' • '+s.date:''}`, s.x, s.y+30);
         });
 
-        ctx.globalAlpha=1;
+        sparks.forEach(s => {
+            const dist = Math.hypot(mouseX - s.x, mouseY - s.y);
+            s.hover = dist < 60;
+            const size = s.hover ? s.baseSize * 3 : s.baseSize + Math.sin(Date.now() / 200 + s.x) * 1.2;
+
+            ctx.shadowBlur = s.hover ? 80 : 30;
+            ctx.shadowColor = '#ff1493';
+            ctx.fillStyle = '#fff';
+            ctx.beginPath();
+            ctx.arc(s.x, s.y, size, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.font = '15px Arial';
+            ctx.fillStyle = 'rgba(255,255,255,' + (s.hover ? 1 : 0.9) + ')';
+            ctx.textAlign = 'center';
+            const text = s.hover ? `от ${s.from} → для ${s.for} • ${s.date}` : `от ${s.from} → для ${s.for}`;
+            ctx.fillText(text, s.x, s.y + 30);
+        });
+
         requestAnimationFrame(draw);
-    );
     }
 
-    let mouseX=0, mouseY=0;
-    canvas.addEventListener('mousemove', e=>{mouseX=e.clientX; mouseY=e.clientY});
-    canvas.addEventListener('touchmove', e=>{mouseX=e.touches[0].clientX; mouseY=e.touches[0].clientY});
-
-    function closeForm(){document.getElementById('form').style.display='none';}
-    document.getElementById('sparkBtn').onclick=()=>{document.getElementById('form').style.display='block';};
+    function closeForm() { document.getElementById('form').style.display = 'none'; }
+    document.getElementById('sparkBtn').onclick = () => { document.getElementById('form').style.display = 'block'; };
 
     loadSparks();
 </script>
