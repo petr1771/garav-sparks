@@ -1,202 +1,60 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GaRaV • Искры надежды для человечества</title>
-    <script src="https://www.gstatic.com/firebasejs/10.13.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.13.1/firebase-firestore-compat.js"></script>
-    <style>
-        body,html{margin:0;padding:0;height:100%;background:#000;overflow:hidden;color:#fff;font-family:Arial,sans-serif}
-        canvas{position:fixed;top:0;left:0}
-        #counter,#title{position:fixed;z-index:10;background:rgba(0,0,0,0.5);padding:8px 15px;border-radius:8px;font-size:22px}
-        #title{top:20px;left:20px}
-        #counter{top:20px;right:20px}
-        #sparkBtn{position:fixed;bottom:40px;left:50%;transform:translateX(-50%);padding:16px 40px;background:#ff1493;border:none;border-radius:50px;color:#fff;font-size:21px;cursor:pointer;z-index:10;box-shadow:0 0 30px rgba(255,20,147,.7);transition:.3s}
-        #sparkBtn:hover{transform:translateX(-50%) scale(1.08);background:#ff45b3}
-        #form{position:fixed;bottom:120px;left:50%;transform:translateX(-50%);background:rgba(20,20,40,.98);padding:30px;border-radius:20px;z-index:20;display:none;min-width:340px;text-align:center;box-shadow:0 0 40px rgba(255,20,147,.5)}
-        input{width:300px;padding:14px;margin:10px 0;border-radius:12px;border:none;font-size:17px}
-        .btn{padding:14px 30px;margin:10px;border:none;border-radius:12px;cursor:pointer;font-size:18px;font-weight:bold}
-        .ok{background:#00ff9d;color:#000}
-        .cancel{background:#555;color:#fff}
-        #manifest{position:fixed;bottom:10px;left:0;right:0;text-align:center;font-size:13px;opacity:.8;line-height:1.6}
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GaRaV • Вечные Искры</title>
+  <script src="https://unpkg.com/p5@1.9.0/lib/p5.js"></script>
+  <style>
+    body{margin:0;background:#000;overflow:hidden;color:#88ffff;font-family:'Courier New',monospace;cursor:crosshair}
+    h1{position:fixed;top:10px;width:100%;z-index:10;text-align:center;font-size:24px;letter-spacing:3px;text-shadow:0 0 15px #00ffff}
+    .hint{position:fixed;top:55px;width:100%;z-index:10;text-align:center;font-size:18px;text-shadow:0 0 10px #00ffff}
+    button{position:fixed;top:85px;left:50%;transform:translateX(-50%);z-index:10;padding:14px 36px;background:transparent;border:2px solid #00ffff;color:#00ffff;font-size:19px;border-radius:50px;cursor:pointer;box-shadow:0 0 25px #00ffff;transition:.4s}
+    button:hover{background:#00ffff33;color:#fff;transform:translateX(-50%) scale(1.1)}
+  </style>
 </head>
 <body>
-<canvas id="canvas"></canvas>
-<div id="title">GaRaV • Искры надежды для человечества</div>
-<div id="counter">Искр: 0</div>
-<button id="sparkBtn">Зажечь Искру за того, кого люблю ❤️</button>
-<div id="form">
-    <h3>Зажги вечную Искру</h3>
-    <input type="text" id="from" placeholder="Твоё имя (или Аноним)">
-    <input type="text" id="for" placeholder="За кого зажигаешь">
-    <br><br>
-    <button class="btn ok" onclick="addSpark()">Зажечь навсегда!</button>
-    <button class="btn cancel" onclick="closeForm()">Отмена</button>
-</div>
-<div id="manifest">
-    GaRaV — Галактика Разума Вселенной<br>
-    Не убивать • Не обманывать • Не воровать<br>
-    Земной он или инопланетный — разум всегда брат
-</div>
+  <h1 id="title">GaRaV • 1 Искра • Твоя звезда будет сиять 100 лет</h1>
+  <div class="hint">Кликни в космос — зажги свою вечную Искру</div>
+  <button onclick="addSpark()">Зажечь Искру</button>
 
-<script>
-    const firebaseConfig = {
-        apiKey: "AIzaSyDQIRGVM5ca7K3WCCwTqPqqhjXiUkIk5po",
-        authDomain: "garav-sparks-cda52.firebaseapp.com",
-        projectId: "garav-sparks-cda52",
-        storageBucket: "garav-sparks-cda52.firebasestorage.app",
-        messagingSenderId: "1086113078430",
-        appId: "1:1086113078430:web:66ccd560cb5ea7de362f8f",
-        measurementId: "G-KVE0SJMWG9"
-    };
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore();
-
-    const canvas = document.getElementById('canvas');
-    const ctx = canvas.getContext('2d');
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
-
+  <script>
     let sparks = [];
-    let particles = [];
-    let counter = 0;
-    let mouseX = 0, mouseY = 0;
-
-    // фон космоса
-    for(let i = 0; i < 100; i++){
-        particles.push({
-            x: Math.random() * canvas.width,
-            y: Math.random() * canvas.height,
-            r: Math.random() * 1.5,
-            speed: Math.random() * 0.5 + 0.1
-        });
-    }
-
-    window.addEventListener('resize', () => {
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
+    new p5(p => {
+      p.setup = () => {
+        p.createCanvas(p.windowWidth, p.windowHeight);
+        sparks.push(new Spark("от Петра для моей жены ❤️"));
+      };
+      p.draw = () => {
+        p.background(0,0,20);
+        p.stroke(100,200,255,50);
+        for(let i=0;i<sparks.length;i++)for(let j=i+1;j<sparks.length;j++){
+          let d=p.dist(sparks[i].x,sparks[j].x,sparks[i].y,sparks[j].y);
+          if(d<250){p.strokeWeight(p.map(d,0,250,5,0));p.line(sparks[i].x,sparks[i].y,sparks[j].x,sparks[j].y)}
+        }
+        sparks.forEach(s=>s.show(p));
+      };
+      p.mousePressed = () => {if(p.mouseY>150) addSpark()};
+      p.windowResized = () => p.resizeCanvas(p.windowWidth,p.windowHeight);
     });
 
-    canvas.addEventListener('mousemove', e => { mouseX = e.clientX; mouseY = e.clientY; });
-    canvas.addEventListener('touchmove', e => { mouseX = e.touches[0].clientX; mouseY = e.touches[0].clientY; });
-
-    async function loadSparks() {
-        try {
-            const snapshot = await db.collection("sparks").orderBy("timestamp", "desc").get();
-            sparks = [];
-            snapshot.forEach(doc => {
-                const d = doc.data();
-                const date = d.timestamp ? d.timestamp.toDate().toLocaleDateString("ru-RU") : "давно";
-                sparks.push({
-                    x: Math.random() * (canvas.width - 300) + 150,
-                    y: Math.random() * (canvas.height - 300) + 150,
-                    from: d.from || "Аноним",
-                    for: d.for || "человечества",
-                    date: date,
-                    baseSize: 4.5,
-                    hover: false
-                });
-            });
-            counter = sparks.length;
-            document.getElementById('counter').textContent = `Искр: ${counter}`;
-            draw();
-        } catch (e) {
-            console.log("База пуста — зажигаем первую");
-            addFirstSpark();
-        }
+    class Spark{
+      constructor(n){this.x=p.random(p.width);this.y=p.random(p.height);this.size=p.random(12,28);this.name=n;this.pulse=p.random(p.TWO_PI)}
+      show(p){
+        this.pulse+=0.03;
+        let s=this.size+8*p.sin(p.frameCount*0.08+this.pulse);
+        let a=255*(0.7+0.3*p.sin(p.frameCount*0.03+this.pulse));
+        p.fill(180,255,255,a);p.noStroke();p.ellipse(this.x,this.y,s,s);
+        for(let i=1;i<=3;i++){p.fill(180,255,255,40/i);p.ellipse(this.x,this.y,s+i*20,s+i*20)}
+        p.fill(255);p.textAlign(p.CENTER);p.textSize(12);p.text(this.name,this.x,this.y-22);
+      }
     }
 
-    async function addFirstSpark() {
-        await db.collection("sparks").add({
-            from: "Пётр",
-            for: "моей любимой жены ❤️",
-            timestamp: firebase.firestore.FieldValue.serverTimestamp()
-        });
-        loadSparks();
+    function addSpark(){
+      let name=prompt("За кого зажигаешь эту вечную Искру?","");
+      if(name!==null) sparks.push(new Spark(name||("Искра "+(sparks.length+1))));
+      document.getElementById("title").innerText=`GaRaV • ${sparks.length} Искр${sparks.length>4?"":"ы/а"} • Твоя звезда будет сиять 100 лет`;
     }
-
-    async function addSpark() {
-        const today = new Date().toDateString();
-        const saved = JSON.parse(localStorage.getItem('GaRaV_day') || '[]');
-        if (saved.includes(today) && saved.length >= 3) {
-            alert("Ты уже зажёг 3 искры сегодня. Завтра снова ❤️");
-            return;
-        }
-        if (saved.length >= 3 && !saved.includes(today)) saved.shift();
-
-        const from = document.getElementById('from').value.trim() || "Аноним";
-        const forWhom = document.getElementById('for').value.trim() || "человечества";
-
-        await db.collection("sparks").add({
-            from: from,
-            for: forWhom,
-            timestamp: firebase.firestore.FieldValue.serverTimestamp()
-        });
-
-        sparks.push({
-            x: canvas.width / 2,
-            y: canvas.height / 2,
-            from: from,
-            for: forWhom,
-            date: new Date().toLocaleDateString("ru-RU"),
-            baseSize: 7,
-            hover: false,
-            alpha: 0
-        });
-
-        new Audio('data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQAAAAA=').play();
-
-        counter++;
-        document.getElementById('counter').textContent = `Искр: ${counter}`;
-        closeForm();
-        document.getElementById('from').value = "";
-        document.getElementById('for').value = "";
-
-        saved.push(today);
-        localStorage.setItem('GaRaV_day', JSON.stringify(saved));
-    }
-
-    function draw() {
-        ctx.fillStyle = 'rgba(0,0,0,0.05)';
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-        particles.forEach(p => {
-            p.y += p.speed;
-            if (p.y > canvas.height) p.y = 0;
-            ctx.fillStyle = 'rgba(255,255,255,0.03)';
-            ctx.beginPath();
-            ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-            ctx.fill();
-        });
-
-        sparks.forEach(s => {
-            const dist = Math.hypot(mouseX - s.x, mouseY - s.y);
-            s.hover = dist < 60;
-            const size = s.hover ? s.baseSize * 3 : s.baseSize + Math.sin(Date.now() / 200 + s.x) * 1.2;
-
-            ctx.shadowBlur = s.hover ? 80 : 30;
-            ctx.shadowColor = '#ff1493';
-            ctx.fillStyle = '#fff';
-            ctx.beginPath();
-            ctx.arc(s.x, s.y, size, 0, Math.PI * 2);
-            ctx.fill();
-
-            ctx.font = '15px Arial';
-            ctx.fillStyle = 'rgba(255,255,255,' + (s.hover ? 1 : 0.9) + ')';
-            ctx.textAlign = 'center';
-            const text = s.hover ? `от ${s.from} → для ${s.for} • ${s.date}` : `от ${s.from} → для ${s.for}`;
-            ctx.fillText(text, s.x, s.y + 30);
-        });
-
-        requestAnimationFrame(draw);
-    }
-
-    function closeForm() { document.getElementById('form').style.display = 'none'; }
-    document.getElementById('sparkBtn').onclick = () => { document.getElementById('form').style.display = 'block'; };
-
-    loadSparks();
-</script>
+  </script>
 </body>
 </html>
